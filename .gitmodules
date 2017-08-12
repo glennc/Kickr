@@ -1,0 +1,3 @@
+[submodule "lib/HealthChecks"]
+	path = lib/HealthChecks
+	url = git@github.com:dotnet-architecture/HealthChecks.git
