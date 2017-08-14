@@ -44,17 +44,30 @@ namespace Kickr.Consul
                     try
                     {
                         var _serviceId = _env.ApplicationName + Guid.NewGuid();
+						_ttlId = $"{_env.ApplicationName}_ttl_check_{Guid.NewGuid()}";
+
                         var result = await client.Agent.ServiceRegister(new AgentServiceRegistration
                         {
                             Name = _env.ApplicationName,
                             Address = address,
                             ID = _serviceId,
-                            Check = new AgentCheckRegistration
-                            {
-								Name = $"{_env.ApplicationName}_ping_check",
-								ID = $"{_env.ApplicationName}_ping_check_{Guid.NewGuid()}",
-                                HTTP = address,
-                                Interval = TimeSpan.FromSeconds(20)
+                            Port = uri.Port,
+                            Checks = new AgentServiceCheck[] {
+                                new AgentCheckRegistration
+                                {
+                                    Name = $"{_env.ApplicationName}_ping_check",
+                                    ID = $"{_env.ApplicationName}_ping_check_{Guid.NewGuid()}",
+                                    HTTP = address,
+                                    Interval = TimeSpan.FromSeconds(20),
+                                    Timeout = TimeSpan.FromSeconds(5)
+                                },
+                                new AgentCheckRegistration
+                                {
+                                    Name = $"{_env.ApplicationName}_ttl_check",
+                                    ID = _ttlId,
+                                    TTL = TimeSpan.FromSeconds(30),
+                                    ServiceID = _serviceId
+                                }
                             }
                         }, cancellationToken);
 
@@ -62,20 +75,6 @@ namespace Kickr.Consul
                         {
                             throw new ApplicationException("Service registration not accepted.");
                         }
-
-						_ttlId = $"{_env.ApplicationName}_ttl_check_{Guid.NewGuid()}";
-						var checkResult = await client.Agent.CheckRegister(new AgentCheckRegistration
-                        {
-                            Name = $"{_env.ApplicationName}_ttl_check",
-                            ID = _ttlId,
-                            TTL = TimeSpan.FromSeconds(30),
-                            ServiceID = _serviceId
-                        }, cancellationToken);
-
-						if (checkResult.StatusCode != System.Net.HttpStatusCode.OK)
-						{
-							throw new ApplicationException("Service ttl check registration not accepted.");
-						}
                     }
                     catch(Exception ex)
                     {

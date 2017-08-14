@@ -7,31 +7,36 @@ using Kickr;
 using System.Net.Http;
 using Polly.CircuitBreaker;
 using Microsoft.Extensions.Logging;
+using System.Threading;
+using Kickr.Consul;
+using Consul;
 
 namespace sample.Pages
 {
     public class AboutModel : PageModel
     {
         private ILogger<AboutModel> _logger;
+        private IConsulClient _cilent;
 
         public string Message { get; set; }
 
-        public AboutModel(ILogger<AboutModel> logger)
+        public AboutModel(ILogger<AboutModel> logger, IConsulClient client)
         {
             _logger = logger;
+            _cilent = client;
         }
 
         public async Task OnGet()
         {
             Message = "Your application description page.";
 
-            IServiceDiscoveryClient services = new DummyServiceDiscovery();
+            IServiceDiscoveryClient services = new ConsulServiceDiscoveryClient(_cilent);
             var client = new HttpClient(new PolicyHandler(services));
             for (int i = 0; i < 10; i++)
             {
                 try
                 {
-                    var s = await client.GetStringAsync("http://localhost:8080");
+                    var s = await client.GetStringAsync("http://sample");
                 }
                 catch (BrokenCircuitException ex)
                 {
@@ -49,9 +54,14 @@ namespace sample.Pages
 
     public class DummyServiceDiscovery : IServiceDiscoveryClient
     {
-        public Uri GetUrl(Uri service)
+        public Task<Uri> GetUrl(Uri service)
         {
-            return service;
+            return GetUrl(service, default(CancellationToken));
+        }
+
+        public Task<Uri> GetUrl(Uri service, CancellationToken token)
+        {
+            return Task.FromResult(service);
         }
     }
 }

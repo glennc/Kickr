@@ -6,9 +6,11 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Kickr;
 using Kickr.Consul;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.HealthChecks;
+using Consul;
 
 namespace sample
 {
@@ -25,6 +27,8 @@ namespace sample
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
+            services.AddSingleton<IConsulClient, ConsulClient>();
+            services.AddSingleton<IServiceDiscoveryClient, ConsulServiceDiscoveryClient>();
             services.AddHealthChecks(check => check.AddWorkingSetCheck(int.MaxValue));
             services.AddSingleton<IHostedService, ConsulRegistrar>();
         }

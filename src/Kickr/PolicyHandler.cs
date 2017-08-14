@@ -21,18 +21,18 @@ namespace Kickr
             _policies = new Dictionary<Uri, Policy<HttpResponseMessage>>();
         }
 
-        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage message, CancellationToken token)
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            message.RequestUri = _serviceDiscoverer.GetUrl(message.RequestUri);
+            request.RequestUri = await _serviceDiscoverer.GetUrl(request.RequestUri);
 
             Policy<HttpResponseMessage> executionPolicy;
-            if (!_policies.TryGetValue(message.RequestUri, out executionPolicy))
+            if (!_policies.TryGetValue(request.RequestUri, out executionPolicy))
             {
                 executionPolicy = GetPolicy();
-                _policies.Add(message.RequestUri, executionPolicy);
+                _policies.Add(request.RequestUri, executionPolicy);
             }
 
-            var response = await executionPolicy.ExecuteAsync(t => base.SendAsync(message, t), token);
+            var response = await executionPolicy.ExecuteAsync(t => base.SendAsync(request, t), cancellationToken);
 
             return response;
         }
