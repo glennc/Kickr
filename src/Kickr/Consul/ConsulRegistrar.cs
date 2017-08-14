@@ -20,6 +20,8 @@ namespace Kickr.Consul
         private ILogger<ConsulRegistrar> _logger;
         private IHealthCheckService _healthChecks;
         private bool _running = true;
+        private string _ttlId;
+        private Thread _workerThread;
 
         public ConsulRegistrar(IHostingEnvironment env, IServer server, ILogger<ConsulRegistrar> logger, IHealthCheckService healthChecks)
         {
@@ -41,19 +43,18 @@ namespace Kickr.Consul
 
                     try
                     {
-                        var checkId = $"{_env.ApplicationName}_health_check_{Guid.NewGuid()}";
+                        var _serviceId = _env.ApplicationName + Guid.NewGuid();
                         var result = await client.Agent.ServiceRegister(new AgentServiceRegistration
                         {
                             Name = _env.ApplicationName,
                             Address = address,
+                            ID = _serviceId,
                             Check = new AgentCheckRegistration
                             {
-                                Name = $"{_env.ApplicationName}_health_check",
-                                ID = checkId,
+								Name = $"{_env.ApplicationName}_ping_check",
+								ID = $"{_env.ApplicationName}_ping_check_{Guid.NewGuid()}",
                                 HTTP = address,
-                                Interval = TimeSpan.FromSeconds(20),
-                                Timeout = TimeSpan.FromSeconds(5),
-                                TTL = TimeSpan.FromSeconds(30)
+                                Interval = TimeSpan.FromSeconds(20)
                             }
                         }, cancellationToken);
 
@@ -61,6 +62,20 @@ namespace Kickr.Consul
                         {
                             throw new ApplicationException("Service registration not accepted.");
                         }
+
+						_ttlId = $"{_env.ApplicationName}_ttl_check_{Guid.NewGuid()}";
+						var checkResult = await client.Agent.CheckRegister(new AgentCheckRegistration
+                        {
+                            Name = $"{_env.ApplicationName}_ttl_check",
+                            ID = _ttlId,
+                            TTL = TimeSpan.FromSeconds(30),
+                            ServiceID = _serviceId
+                        }, cancellationToken);
+
+						if (checkResult.StatusCode != System.Net.HttpStatusCode.OK)
+						{
+							throw new ApplicationException("Service ttl check registration not accepted.");
+						}
                     }
                     catch(Exception ex)
                     {
@@ -70,12 +85,15 @@ namespace Kickr.Consul
                 }
             }
 
-            
+            _workerThread = new Thread(new ThreadStart(RunTTLLoop));
+            _workerThread.Start();
         }
 
         public async Task StopAsync(CancellationToken cancellationToken)
         {
             _running = false;
+            _workerThread.Join(10);
+
             using (var client = new ConsulClient())
             {
                 try
@@ -90,11 +108,34 @@ namespace Kickr.Consul
             }
         }
 
-        private void RunTTLLoop()
+        private async void RunTTLLoop()
         {
+            DateTime lastRun = DateTime.UtcNow;
+
             while(_running)
             {
-
+                if ((DateTime.UtcNow - lastRun).TotalSeconds >= 15)
+                {
+                    var healthStatus = await _healthChecks.CheckHealthAsync();
+                    using (var client = new ConsulClient())
+                    {
+                        switch (healthStatus.CheckStatus)
+                        {
+                            case CheckStatus.Healthy:
+                                await client.Agent.PassTTL(_ttlId, healthStatus.Description);
+                                break;
+                            case CheckStatus.Unhealthy:
+                                await client.Agent.FailTTL(_ttlId, healthStatus.Description);
+                                break;
+                            case CheckStatus.Warning:
+                            case CheckStatus.Unknown:
+                                await client.Agent.WarnTTL(_ttlId, healthStatus.Description);
+                                break;
+                        }
+                    }
+                    lastRun = DateTime.UtcNow;
+                }
+                Thread.Sleep(1);
             }
         }
     }

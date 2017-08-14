@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Kickr.Consul;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.HealthChecks;
 
 namespace sample
 {
@@ -24,6 +25,7 @@ namespace sample
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
+            services.AddHealthChecks(check => check.AddWorkingSetCheck(int.MaxValue));
             services.AddSingleton<IHostedService, ConsulRegistrar>();
         }
 
