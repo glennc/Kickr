@@ -22,9 +22,8 @@ namespace sample.Pages
         public async Task OnGet()
         {
             var client = _factory.GetHttpClient();
-            var s = await client.GetStringAsync("http://www.google.com");
+            var s = await client.GetStringAsync("http://google.com");
+            var t = await client.GetStringAsync("http://www.google.com");
         }
     }
-
-
 }

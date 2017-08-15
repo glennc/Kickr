@@ -3,18 +3,18 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Net.Http;
+using Kickr.Options;
+using Microsoft.Extensions.Options;
 
 namespace Kickr
 {
     public class HttpClientFactory : IHttpClientFactory
     {
-        private IServiceDiscoveryClient _discoveryClient;
         private HttpClient _client;
 
-        public HttpClientFactory(IServiceDiscoveryClient discoveryClient, IUriPolicyService policyService)
+        public HttpClientFactory(HttpClientPipelineBuilder builder)
         {
-            _discoveryClient = discoveryClient;
-            _client = new HttpClient(new PolicyHandler(discoveryClient, policyService));
+            _client = new HttpClient(builder.Build());
         }
 
         public HttpClient GetHttpClient()

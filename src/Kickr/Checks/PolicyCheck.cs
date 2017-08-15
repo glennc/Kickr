@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Kickr.Checks
+namespace Kickr.Policy
 {
     public class PolicyCheck : IHealthCheck
     {

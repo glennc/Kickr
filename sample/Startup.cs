@@ -11,7 +11,8 @@ using Kickr.Consul;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.HealthChecks;
 using Consul;
-using Kickr.Checks;
+using Polly;
+using System.Net.Http;
 
 namespace sample
 {
@@ -28,13 +29,31 @@ namespace sample
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
-            services.AddSingleton<IConsulClient, ConsulClient>();
-            services.AddSingleton<IUriPolicyService, PolicyService>();
-            services.AddSingleton<IServiceDiscoveryClient, ConsulServiceDiscoveryClient>();
-            services.AddSingleton<PolicyCheck>();
-            services.AddHealthChecks(check => check.AddCheck<PolicyCheck>("PolicyCheck"));
-            services.AddScoped<IHttpClientFactory, HttpClientFactory>();
-            services.AddSingleton<IHostedService, ConsulRegistrar>();
+
+            services.AddKickr()
+                    .UseConsulServiceDiscovery()
+
+                    .ConfigureDefaultPolicy(o =>
+                    {
+                        o.AddCircuitBreaker(5, TimeSpan.FromSeconds(5));
+                    })
+
+                    .ConfigureDefaultPolicy(o => {
+                        o.AddPolicy(Policy
+                            .Handle<HttpRequestException>()
+                            .OrResult<HttpResponseMessage>(m => m.IsSuccessStatusCode)
+                            .CircuitBreakerAsync(5, TimeSpan.FromSeconds(10)));
+                    })
+
+                    .ConfigureUri("http://google.com", o => {
+                        o.AddPolicy(Policy
+                                .Handle<Exception>()
+                                .OrResult<HttpResponseMessage>(m =>
+                                {
+                                    return m.IsSuccessStatusCode;
+                                })
+                                .CircuitBreakerAsync(2, TimeSpan.FromSeconds(5)));
+                    });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

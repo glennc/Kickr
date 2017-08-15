@@ -33,7 +33,6 @@ namespace Kickr
             _defaultPolicyBuilder = defaultPolicyBuilder;
         }
 
-
         public IEnumerable<KeyValuePair<string, Policy<HttpResponseMessage>>> GetPolicies()
         {
             return _policies.ToArray();
