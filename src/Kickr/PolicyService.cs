@@ -12,7 +12,7 @@ namespace Kickr
         private const int NUMBER_OF_ALLOWED_ERRORS = 3;
 
         private ConcurrentDictionary<string, Policy<HttpResponseMessage>> _policies;
-        private Func<Policy<HttpResponseMessage>> _defaultPolicyBuilder;
+        private Func<Uri, Policy<HttpResponseMessage>> _defaultPolicyBuilder;
         private static Policy<HttpResponseMessage> DefaultPolicy => Policy
                 .Handle<HttpRequestException>()
                 .OrResult<HttpResponseMessage>((resp) =>
@@ -22,12 +22,12 @@ namespace Kickr
                 .CircuitBreakerAsync(NUMBER_OF_ALLOWED_ERRORS, TimeSpan.FromSeconds(30));
 
         public PolicyService()
-            : this(() => DefaultPolicy)
+            : this(_ => DefaultPolicy)
         {
 
         }
 
-        public PolicyService(Func<Policy<HttpResponseMessage>> defaultPolicyBuilder)
+        public PolicyService(Func<Uri, Policy<HttpResponseMessage>> defaultPolicyBuilder)
         {
             _policies = new ConcurrentDictionary<string, Policy<HttpResponseMessage>>();
             _defaultPolicyBuilder = defaultPolicyBuilder;
@@ -44,7 +44,7 @@ namespace Kickr
             Policy<HttpResponseMessage> policy;
             if(!_policies.TryGetValue(policyName.ToString(), out policy))
             {
-                policy = _defaultPolicyBuilder();
+                policy = _defaultPolicyBuilder(policyName);
                 //TODO: Put some more thought into this. After a certain point for most applications this should be almost all reads.
                 _policies.TryAdd(policyName.ToString(), policy);
             }
