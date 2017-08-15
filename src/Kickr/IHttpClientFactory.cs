@@ -5,6 +5,6 @@ namespace Kickr
 {
     public interface IHttpClientFactory
     {
-        HttpClient Get(Uri url);
+        HttpClient GetHttpClient();
     }
 }

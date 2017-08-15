@@ -22,6 +22,7 @@ namespace Kickr.Consul
         private bool _running = true;
         private string _ttlId;
         private Thread _workerThread;
+        string _serviceId;
 
         public ConsulRegistrar(IHostingEnvironment env, IServer server, ILogger<ConsulRegistrar> logger, IHealthCheckService healthChecks)
         {
@@ -43,7 +44,7 @@ namespace Kickr.Consul
 
                     try
                     {
-                        var _serviceId = _env.ApplicationName + Guid.NewGuid();
+                        _serviceId = _env.ApplicationName + Guid.NewGuid();
 						_ttlId = $"{_env.ApplicationName}_ttl_check_{Guid.NewGuid()}";
 
                         var result = await client.Agent.ServiceRegister(new AgentServiceRegistration
@@ -60,13 +61,6 @@ namespace Kickr.Consul
                                     HTTP = address,
                                     Interval = TimeSpan.FromSeconds(20),
                                     Timeout = TimeSpan.FromSeconds(5)
-                                },
-                                new AgentCheckRegistration
-                                {
-                                    Name = $"{_env.ApplicationName}_ttl_check",
-                                    ID = _ttlId,
-                                    TTL = TimeSpan.FromSeconds(30),
-                                    ServiceID = _serviceId
                                 }
                             }
                         }, cancellationToken);
@@ -75,8 +69,22 @@ namespace Kickr.Consul
                         {
                             throw new ApplicationException("Service registration not accepted.");
                         }
+
+                        var checkResult = await client.Agent.CheckRegister(new AgentCheckRegistration
+                        {
+                            Name = $"{_env.ApplicationName}_ttl_check",
+                            ID = _ttlId,
+                            TTL = TimeSpan.FromSeconds(30),
+                            ServiceID = _serviceId
+                        });
+
+                        if (result.StatusCode != System.Net.HttpStatusCode.OK)
+                        {
+                            throw new ApplicationException("Unable to register service TTL check.");
+                        }
+
                     }
-                    catch(Exception ex)
+                    catch (Exception ex)
                     {
                         _logger.LogError(ex, $"Error registering service for {_env.ApplicationName}");
                         throw ex;
@@ -97,7 +105,7 @@ namespace Kickr.Consul
             {
                 try
                 {
-                    await client.Agent.ServiceDeregister(_env.ApplicationName, cancellationToken);
+                    await client.Agent.ServiceDeregister(_serviceId);
                 }
                 catch(Exception ex)
                 {

@@ -11,6 +11,7 @@ using Kickr.Consul;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.HealthChecks;
 using Consul;
+using Kickr.Checks;
 
 namespace sample
 {
@@ -28,8 +29,11 @@ namespace sample
         {
             services.AddMvc();
             services.AddSingleton<IConsulClient, ConsulClient>();
+            services.AddSingleton<IUriPolicyService, PolicyService>();
             services.AddSingleton<IServiceDiscoveryClient, ConsulServiceDiscoveryClient>();
-            services.AddHealthChecks(check => check.AddWorkingSetCheck(int.MaxValue));
+            services.AddSingleton<PolicyCheck>();
+            services.AddHealthChecks(check => check.AddCheck<PolicyCheck>("PolicyCheck"));
+            services.AddScoped<IHttpClientFactory, HttpClientFactory>();
             services.AddSingleton<IHostedService, ConsulRegistrar>();
         }
 

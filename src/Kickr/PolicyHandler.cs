@@ -10,42 +10,25 @@ namespace Kickr
 {
     public class PolicyHandler : DelegatingHandler
     {
-        private const int NUMBER_OF_ALLOWED_ERRORS = 3;
         private IServiceDiscoveryClient _serviceDiscoverer;
-        private Dictionary<Uri, Policy<HttpResponseMessage>> _policies;
+        private IUriPolicyService _policyService;
 
-        public PolicyHandler(IServiceDiscoveryClient serviceDiscoverer)
+        //TODO: This should be split into two delegating handlers.
+        public PolicyHandler(IServiceDiscoveryClient serviceDiscoverer, IUriPolicyService policyService)
             :base(new HttpClientHandler())
         {
             _serviceDiscoverer = serviceDiscoverer;
-            _policies = new Dictionary<Uri, Policy<HttpResponseMessage>>();
+            _policyService = policyService;
         }
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             request.RequestUri = await _serviceDiscoverer.GetUrl(request.RequestUri);
 
-            Policy<HttpResponseMessage> executionPolicy;
-            if (!_policies.TryGetValue(request.RequestUri, out executionPolicy))
-            {
-                executionPolicy = GetPolicy();
-                _policies.Add(request.RequestUri, executionPolicy);
-            }
-
+            var executionPolicy = _policyService.GetPolicy(request.RequestUri);
             var response = await executionPolicy.ExecuteAsync(t => base.SendAsync(request, t), cancellationToken);
 
             return response;
-        }
-
-        private Policy<HttpResponseMessage> GetPolicy()
-        {
-            return Policy
-                .Handle<HttpRequestException>()
-                .OrResult<HttpResponseMessage>((resp) =>
-                {
-                    return resp.IsSuccessStatusCode;
-                })
-                .CircuitBreakerAsync(NUMBER_OF_ALLOWED_ERRORS, TimeSpan.FromSeconds(30));
         }
     }
 }

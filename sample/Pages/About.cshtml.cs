@@ -16,27 +16,26 @@ namespace sample.Pages
     public class AboutModel : PageModel
     {
         private ILogger<AboutModel> _logger;
-        private IConsulClient _cilent;
+        private IHttpClientFactory _cilentFactory;
 
         public string Message { get; set; }
 
-        public AboutModel(ILogger<AboutModel> logger, IConsulClient client)
+        public AboutModel(ILogger<AboutModel> logger, IHttpClientFactory clientFactory)
         {
             _logger = logger;
-            _cilent = client;
+            _cilentFactory = clientFactory;
         }
 
         public async Task OnGet()
         {
             Message = "Your application description page.";
 
-            IServiceDiscoveryClient services = new ConsulServiceDiscoveryClient(_cilent);
-            var client = new HttpClient(new PolicyHandler(services));
+            var client = _cilentFactory.GetHttpClient();
             for (int i = 0; i < 10; i++)
             {
                 try
                 {
-                    var s = await client.GetStringAsync("http://sample");
+                    var s = await client.GetStringAsync("http://about");
                 }
                 catch (BrokenCircuitException ex)
                 {
@@ -48,6 +47,8 @@ namespace sample.Pages
                     _logger.LogError(ex, "error calling service");
                 }
             }
+            var s1 = await client.GetStringAsync("http://www.google.com");
+
         }
 
     }
