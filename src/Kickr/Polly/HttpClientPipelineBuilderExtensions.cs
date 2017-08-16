@@ -2,8 +2,9 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Kickr.Policy;
 
-namespace Kickr.Policy
+namespace Kickr
 {
     public static class HttpClientPipelineBuilderExtensions
     {
@@ -11,7 +12,7 @@ namespace Kickr.Policy
         {
             var p = new PollyHttpHandlerBuilder(builder.Services);
             pollyBuilder(p);
-            builder.HandlerPipeline.Add(p.Build());
+            builder.AddHandler<PollyHttpMessageHandler>();
             return builder;
         }
     }

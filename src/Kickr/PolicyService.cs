@@ -13,7 +13,7 @@ namespace Kickr
 
         private ConcurrentDictionary<string, Policy<HttpResponseMessage>> _policies;
         private Func<Uri, Policy<HttpResponseMessage>> _defaultPolicyBuilder;
-        private static Policy<HttpResponseMessage> DefaultPolicy => Policy
+        private static Policy<HttpResponseMessage> DefaultPolicy => Polly.Policy
                 .Handle<HttpRequestException>()
                 .OrResult<HttpResponseMessage>((resp) =>
                 {

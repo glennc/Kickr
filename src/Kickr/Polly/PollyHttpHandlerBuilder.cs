@@ -42,10 +42,5 @@ namespace Kickr.Policy
                 o.Policy = policy;
             });
         }
-
-        public Func<HttpMessageHandler, PollyHttpMessageHandler> Build()
-        {
-            
-        }
     }
 }

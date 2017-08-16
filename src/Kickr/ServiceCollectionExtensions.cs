@@ -21,7 +21,9 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddHealthChecks(check => check.AddCheck<PolicyCheck>("PolicyCheck", TimeSpan.FromSeconds(10)));
             services.AddScoped<IHttpClientFactory, HttpClientFactory>();
 
-            return new HttpClientPipelineBuilder(services);
+            var pipelineBuilder = new HttpClientPipelineBuilder(services);
+            services.AddSingleton(pipelineBuilder);
+            return pipelineBuilder;
         }
 
     }

@@ -13,6 +13,7 @@ using Microsoft.Extensions.HealthChecks;
 using Consul;
 using Polly;
 using System.Net.Http;
+using Kickr.Policy;
 
 namespace sample
 {
@@ -32,27 +33,31 @@ namespace sample
 
             services.AddKickr()
                     .UseConsulServiceDiscovery()
-
-                    .ConfigureDefaultPolicy(o =>
+                    .UsePolly(p =>
                     {
-                        o.AddCircuitBreaker(5, TimeSpan.FromSeconds(5));
-                    })
+                        p.ConfigureDefaultPolicy(o =>
+                         {
+                             o.AddCircuitBreaker(5, TimeSpan.FromSeconds(5));
+                         })
 
-                    .ConfigureDefaultPolicy(o => {
-                        o.AddPolicy(Policy
-                            .Handle<HttpRequestException>()
-                            .OrResult<HttpResponseMessage>(m => m.IsSuccessStatusCode)
-                            .CircuitBreakerAsync(5, TimeSpan.FromSeconds(10)));
-                    })
+                        .ConfigureDefaultPolicy(o =>
+                        {
+                            o.AddPolicy(Policy
+                                .Handle<HttpRequestException>()
+                                .OrResult<HttpResponseMessage>(m => m.IsSuccessStatusCode)
+                                .CircuitBreakerAsync(5, TimeSpan.FromSeconds(10)));
+                        })
 
-                    .ConfigureUri("http://google.com", o => {
-                        o.AddPolicy(Policy
-                                .Handle<Exception>()
-                                .OrResult<HttpResponseMessage>(m =>
-                                {
-                                    return m.IsSuccessStatusCode;
-                                })
-                                .CircuitBreakerAsync(2, TimeSpan.FromSeconds(5)));
+                        .ConfigureUri("http://google.com", o =>
+                        {
+                            o.AddPolicy(Policy
+                                    .Handle<Exception>()
+                                    .OrResult<HttpResponseMessage>(m =>
+                                    {
+                                        return m.IsSuccessStatusCode;
+                                    })
+                                    .CircuitBreakerAsync(2, TimeSpan.FromSeconds(5)));
+                        });
                     });
         }
 

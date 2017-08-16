@@ -12,9 +12,9 @@ namespace Kickr
     {
         private HttpClient _client;
 
-        public HttpClientFactory(HttpClientPipelineBuilder builder)
+        public HttpClientFactory(IServiceProvider provider, HttpClientPipelineBuilder builder)
         {
-            _client = new HttpClient(builder.Build());
+            _client = new HttpClient(builder.Build(provider));
         }
 
         public HttpClient GetHttpClient()

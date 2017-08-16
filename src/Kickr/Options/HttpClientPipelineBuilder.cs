@@ -9,17 +9,30 @@ namespace Kickr.Options
     public class HttpClientPipelineBuilder
     {
         public IServiceCollection Services { get; private set; }
-        public List<Func<HttpClientHandler, DelegatingHandler>> HandlerPipeline { get; private set; }
+        private List<Type> _handlerPipeline;
 
         public HttpClientPipelineBuilder(IServiceCollection services)
         {
             Services = services;
-            HandlerPipeline = new List<Func<HttpClientHandler, DelegatingHandler>>();
+            _handlerPipeline = new List<Type>();
         }
 
-        public HttpClientHandler Build()
+        public void AddHandler<T>() where T : DelegatingHandler
         {
+            _handlerPipeline.Add(typeof(T));
+        }
 
+        public HttpMessageHandler Build(IServiceProvider provider)
+        {
+            _handlerPipeline.Reverse();
+            HttpMessageHandler handler = new HttpClientHandler();
+
+            foreach(var handlerType in _handlerPipeline)
+            {
+                handler = (DelegatingHandler)ActivatorUtilities.CreateInstance(provider, handlerType, handler);
+            }
+
+            return handler;
         }
     }
 }
