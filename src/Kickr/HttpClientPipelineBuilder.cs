@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
 
-namespace Kickr.Options
+namespace Kickr
 {
     public class HttpClientPipelineBuilder
     {

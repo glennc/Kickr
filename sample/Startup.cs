@@ -40,23 +40,10 @@ namespace sample
                              o.AddCircuitBreaker(5, TimeSpan.FromSeconds(5));
                          })
 
-                        .ConfigureDefaultPolicy(o =>
-                        {
-                            o.AddPolicy(Policy
-                                .Handle<HttpRequestException>()
-                                .OrResult<HttpResponseMessage>(m => m.IsSuccessStatusCode)
-                                .CircuitBreakerAsync(5, TimeSpan.FromSeconds(10)));
-                        })
-
                         .ConfigureUri("http://google.com", o =>
                         {
-                            o.AddPolicy(Policy
-                                    .Handle<Exception>()
-                                    .OrResult<HttpResponseMessage>(m =>
-                                    {
-                                        return m.IsSuccessStatusCode;
-                                    })
-                                    .CircuitBreakerAsync(2, TimeSpan.FromSeconds(5)));
+                            o.AddRetry();
+                            o.AddCircuitBreaker(2, TimeSpan.FromSeconds(5));
                         });
                     });
         }

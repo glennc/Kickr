@@ -6,18 +6,18 @@ using System.Net.Http;
 
 namespace Kickr.Policy
 {
-    public class PolicyBuilder
+    public class PollyPolicyBuilder
     {
         private List<Policy<HttpResponseMessage>> _policies;
 
-        public PolicyBuilder()
+        public PollyPolicyBuilder()
         {
             _policies = new List<Policy<HttpResponseMessage>>();
         }
 
-        public PolicyBuilder AddPolicy(Policy<HttpResponseMessage> policyFunc)
+        public PollyPolicyBuilder AddPolicy(Policy<HttpResponseMessage> policy)
         {
-            _policies.Add(policyFunc);
+            _policies.Add(policy);
             return this;
         }
 
@@ -26,7 +26,7 @@ namespace Kickr.Policy
 
             if (_policies.Count() > 1)
             {
-                return Polly.Policy.Wrap(_policies.ToArray());
+                return Polly.Policy.WrapAsync(_policies.ToArray());
             }
 
             return _policies[0];

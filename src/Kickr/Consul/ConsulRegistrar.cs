@@ -24,12 +24,11 @@ namespace Kickr.Consul
         private Thread _workerThread;
         string _serviceId;
 
-        public ConsulRegistrar(IHostingEnvironment env, IServer server, ILogger<ConsulRegistrar> logger, IHealthCheckService healthChecks)
+        public ConsulRegistrar(IHostingEnvironment env, IServer server, ILogger<ConsulRegistrar> logger)
         {
             _env = env;
             _server = server;
             _logger = logger;
-            _healthChecks = healthChecks;
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)
@@ -92,7 +91,7 @@ namespace Kickr.Consul
                 }
             }
 
-            _workerThread = new Thread(new ThreadStart(RunTTLLoop));
+            _workerThread = new Thread(new ThreadStart(RunTTLLoop2));
             _workerThread.Start();
         }
 
@@ -113,6 +112,24 @@ namespace Kickr.Consul
                     throw ex;
                 }
             }
+        }
+
+        private async void RunTTLLoop2()
+        {
+			DateTime lastRun = DateTime.UtcNow;
+
+			while (_running)
+            {
+                if ((DateTime.UtcNow - lastRun).TotalSeconds >= 15)
+                {
+                    using (var client = new ConsulClient())
+                    {
+                        await client.Agent.PassTTL(_ttlId, "Alive");
+                    }
+					lastRun = DateTime.UtcNow;
+				}
+				Thread.Sleep(1);
+			}
         }
 
         private async void RunTTLLoop()

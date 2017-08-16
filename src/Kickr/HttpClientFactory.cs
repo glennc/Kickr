@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Net.Http;
-using Kickr.Options;
 using Microsoft.Extensions.Options;
 
 namespace Kickr

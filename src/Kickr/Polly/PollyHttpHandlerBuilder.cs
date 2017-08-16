@@ -14,26 +14,26 @@ namespace Kickr.Policy
             this.Services = services;
         }
 
-        public PollyHttpHandlerBuilder ConfigureUri(string name, Action<PolicyBuilder> action)
+        public PollyHttpHandlerBuilder ConfigureUri(string name, Action<PollyPolicyBuilder> action)
         {
             return ConfigureUri(new Uri(name), action);
         }
 
-        public PollyHttpHandlerBuilder ConfigureUri(Uri name, Action<PolicyBuilder> action)
+        public PollyHttpHandlerBuilder ConfigureUri(Uri name, Action<PollyPolicyBuilder> action)
         {
             Configure($"{name.Host}:{name.Port}", name, action);
             return this;
         }
 
-        public PollyHttpHandlerBuilder ConfigureDefaultPolicy(Action<PolicyBuilder> action)
+        public PollyHttpHandlerBuilder ConfigureDefaultPolicy(Action<PollyPolicyBuilder> action)
         {
             Configure("Default", null, action);
             return this;
         }
 
-        private void Configure(string name, Uri uri, Action<PolicyBuilder> action)
+        private void Configure(string name, Uri uri, Action<PollyPolicyBuilder> action)
         {
-            var policyBuilder = new PolicyBuilder();
+            var policyBuilder = new PollyPolicyBuilder();
             action(policyBuilder);
             var policy = policyBuilder.Build();
             Services.Configure<PollyUriOptions>(name, o =>
