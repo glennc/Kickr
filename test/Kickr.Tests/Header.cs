@@ -23,6 +23,7 @@ namespace Kickr.Tests
             var monitor = services.GetRequiredService<IOptionsMonitor<HeaderOptions>>();
             Assert.Equal(3, monitor.Get("http://Uri").Headers.Count);
             Assert.Equal(2, monitor.CurrentValue.Headers.Count);
+            Assert.Equal(2, monitor.Get("nonexistantkey").Headers.Count);
         }
     }
 }

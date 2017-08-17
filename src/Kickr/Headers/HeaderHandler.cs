@@ -8,10 +8,10 @@ namespace Kickr
 {
     public class HeaderHandler : DelegatingHandler
     {
-        private IOptionsFactory<HeaderOptions> _optionsFactory;
+        private IOptionsMonitor<HeaderOptions> _optionsFactory;
         private UriKeyGenerator _keyGenerator;
 
-        public HeaderHandler(IOptionsFactory<HeaderOptions> optionsFactory, UriKeyGenerator keyGenerator)
+        public HeaderHandler(IOptionsMonitor<HeaderOptions> optionsFactory, UriKeyGenerator keyGenerator)
         {
             _optionsFactory = optionsFactory;
             _keyGenerator = keyGenerator;
@@ -19,8 +19,9 @@ namespace Kickr
 
 		protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            var common = _optionsFactory.Create("Common");
-            var uriOptions = _optionsFactory.Create(_keyGenerator(request.RequestUri));
+            var uriOptions = _optionsFactory.Get(_keyGenerator(request.RequestUri));
+
+
 
             return await base.SendAsync(request, cancellationToken);
         }
