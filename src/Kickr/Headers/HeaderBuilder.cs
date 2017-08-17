@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Kickr.Headers
+namespace Kickr
 {
     public class HeaderBuilder
     {
@@ -12,5 +12,16 @@ namespace Kickr.Headers
             _services = services;
         }
 
+        public HeaderBuilder AddHeaders(Action<HeaderOptions> optionsBuilder)
+        {
+            _services.ConfigureAll(optionsBuilder);
+            return this;
+        }
+
+        public HeaderBuilder AddHeaders(string uriKey, Action<HeaderOptions> optionsBuilder)
+        {
+            _services.Configure(uriKey, optionsBuilder);
+            return this;
+        }
     }
 }

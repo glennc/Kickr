@@ -40,15 +40,21 @@ namespace sample
 					o.AddCircuitBreaker(5, TimeSpan.FromSeconds(5));
 				})
 
-				.ConfigureUri("http://google.com", o =>
+				.ConfigureUri("github", o =>
                 {
                     o.AddRetry();
                     o.AddCircuitBreaker(2, TimeSpan.FromSeconds(5));
                 });
 			});
 
-            services.AddHttpClientFactory(pipelineBuilder =>
-                      pipelineBuilder
+            services.AddHeaders(b =>
+            {
+                b.AddHeaders(o => o.Headers.Add("user-agent", "myagent"));
+                b.AddHeaders("github", o => o.Headers.Add("Accept", "application/vnd.github.v3+json"));
+            });
+
+            services.AddHttpClientFactory(pipelineBuilder => pipelineBuilder
+                        .UseKeyGenerator(uri => uri.Host)
                         .UseConsulServiceDiscovery()
                         .UsePolly());
         }

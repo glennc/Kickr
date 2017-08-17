@@ -4,7 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 
-namespace Kickr.Headers
+namespace Kickr
 {
     public class HeaderHandler : DelegatingHandler
     {
@@ -20,7 +20,8 @@ namespace Kickr.Headers
 		protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             var common = _optionsFactory.Create("Common");
-            var defOptions = _optionsFactory.Create("Default");
+            var uriOptions = _optionsFactory.Create(_keyGenerator(request.RequestUri));
+
             return await base.SendAsync(request, cancellationToken);
         }
 	}

@@ -27,10 +27,11 @@ namespace Kickr
             _handlerPipeline.Add(typeof(T));
         }
 
-        public void UseKeyGenerator(UriKeyGenerator generator)
+        public HttpClientPipelineBuilder UseKeyGenerator(UriKeyGenerator generator)
         {
             _keyGenerator = generator;
             Services.AddSingleton(_keyGenerator);
+            return this;
         }
 
         public HttpMessageHandler Build(IServiceProvider provider)
