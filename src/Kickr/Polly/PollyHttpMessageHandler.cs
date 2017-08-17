@@ -11,16 +11,18 @@ namespace Kickr.Policy
     public class PollyHttpMessageHandler : DelegatingHandler
     {
         private IOptionsFactory<PollyUriOptions> _optionsFactory;
+        private UriKeyGenerator _keyGenerator;
 
-        public PollyHttpMessageHandler(IOptionsFactory<PollyUriOptions> optionsFactory, HttpMessageHandler baseHandler)
+        public PollyHttpMessageHandler(IOptionsFactory<PollyUriOptions> optionsFactory, HttpMessageHandler baseHandler, UriKeyGenerator keyGenerator)
             : base(baseHandler)
         {
             _optionsFactory = optionsFactory;
+            _keyGenerator = keyGenerator;
         }
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            var options = _optionsFactory.Create($"{request.RequestUri.Host}:{request.RequestUri.Port}");
+            var options = _optionsFactory.Create(_keyGenerator(request.RequestUri));
 
             if (options.Policy == null)
             {

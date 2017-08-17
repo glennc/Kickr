@@ -6,20 +6,31 @@ using System.Text;
 
 namespace Kickr
 {
-    public class HttpClientPipelineBuilder
+	public delegate string UriKeyGenerator(Uri uri);
+
+	public class HttpClientPipelineBuilder
     {
-        public IServiceCollection Services { get; private set; }
+		public IServiceCollection Services { get; private set; }
         private List<Type> _handlerPipeline;
+        private UriKeyGenerator _keyGenerator;
 
         public HttpClientPipelineBuilder(IServiceCollection services)
         {
             Services = services;
             _handlerPipeline = new List<Type>();
+            _keyGenerator = (uri) => uri.ToString();
+            services.AddSingleton(_keyGenerator);
         }
 
         public void AddHandler<T>() where T : DelegatingHandler
         {
             _handlerPipeline.Add(typeof(T));
+        }
+
+        public void UseKeyGenerator(UriKeyGenerator generator)
+        {
+            _keyGenerator = generator;
+            Services.AddSingleton(_keyGenerator);
         }
 
         public HttpMessageHandler Build(IServiceProvider provider)

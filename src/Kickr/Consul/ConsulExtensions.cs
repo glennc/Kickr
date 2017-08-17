@@ -13,13 +13,16 @@ namespace Kickr.Consul
     {
         public static HttpClientPipelineBuilder UseConsulServiceDiscovery(this HttpClientPipelineBuilder builder)
         {
-            builder.Services.TryAddSingleton<IConsulClient, ConsulClient>();
-            builder.Services.TryAddSingleton<IServiceDiscoveryClient, ConsulServiceDiscoveryClient>();
-            builder.Services.TryAddSingleton<IHostedService, ConsulRegistrar>();
-
             builder.AddHandler<ConsulMessageHandler>();
-
             return builder;
+        }
+
+        public static IServiceCollection AddConsul(this IServiceCollection services)
+        {
+			services.TryAddSingleton<IConsulClient, ConsulClient>();
+			services.TryAddSingleton<IServiceDiscoveryClient, ConsulServiceDiscoveryClient>();
+			services.TryAddSingleton<IHostedService, ConsulRegistrar>();
+            return services;
         }
     }
 }

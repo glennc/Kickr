@@ -31,21 +31,26 @@ namespace sample
         {
             services.AddMvc();
 
-            services.AddKickr()
-                    .UseConsulServiceDiscovery()
-                    .UsePolly(p =>
-                    {
-                        p.ConfigureDefaultPolicy(o =>
-                         {
-                             o.AddCircuitBreaker(5, TimeSpan.FromSeconds(5));
-                         })
+            services.AddConsul();
 
-                        .ConfigureUri("http://google.com", o =>
-                        {
-                            o.AddRetry();
-                            o.AddCircuitBreaker(2, TimeSpan.FromSeconds(5));
-                        });
-                    });
+			services.AddPolly(p =>
+			{
+				p.ConfigureDefaultPolicy(o =>
+				{
+					o.AddCircuitBreaker(5, TimeSpan.FromSeconds(5));
+				})
+
+				.ConfigureUri("http://google.com", o =>
+                {
+                    o.AddRetry();
+                    o.AddCircuitBreaker(2, TimeSpan.FromSeconds(5));
+                });
+			});
+
+            services.AddHttpClientFactory(pipelineBuilder =>
+                      pipelineBuilder
+                        .UseConsulServiceDiscovery()
+                        .UsePolly());
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

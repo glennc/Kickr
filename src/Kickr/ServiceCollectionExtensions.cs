@@ -13,13 +13,14 @@ namespace Microsoft.Extensions.DependencyInjection
     public static class ServiceCollectionExtensions
     {
 
-        public static HttpClientPipelineBuilder AddKickr(this IServiceCollection services)
+        public static IServiceCollection AddHttpClientFactory(this IServiceCollection services, Action<HttpClientPipelineBuilder> pipelineBuilder)
         {
             services.TryAddScoped<IHttpClientFactory, HttpClientFactory>();
 
-            var pipelineBuilder = new HttpClientPipelineBuilder(services);
-            services.TryAddSingleton(pipelineBuilder);
-            return pipelineBuilder;
+            var pipeline = new HttpClientPipelineBuilder(services);
+            pipelineBuilder(pipeline);
+            services.TryAddSingleton(pipeline);
+            return services;
         }
 
     }

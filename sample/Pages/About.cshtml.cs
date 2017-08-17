@@ -35,7 +35,7 @@ namespace sample.Pages
             {
                 try
                 {
-                    var s = await client.GetStringAsync("http://about");
+                    var s = await client.GetStringAsync("http://sample");
                 }
                 catch (BrokenCircuitException ex)
                 {
