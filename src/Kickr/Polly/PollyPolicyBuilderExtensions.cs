@@ -12,7 +12,7 @@ namespace Kickr.Policy
         {
             var defaultBreaker = Polly.Policy
                                     .Handle<HttpRequestException>()
-                                    .OrResult<HttpResponseMessage>(m => m.IsSuccessStatusCode)
+                                    .OrResult<HttpResponseMessage>(m => !m.IsSuccessStatusCode)
                                     .CircuitBreakerAsync(handledEventsAllowedBeforeBreaking, durationOfBreak);
             builder.AddPolicy(defaultBreaker);
             return builder;
@@ -22,7 +22,7 @@ namespace Kickr.Policy
         {
             var defaultRetry = Polly.Policy
                                     .Handle<HttpRequestException>()
-                                    .OrResult<HttpResponseMessage>(m => m.IsSuccessStatusCode)
+                                    .OrResult<HttpResponseMessage>(m => !m.IsSuccessStatusCode)
                                     .RetryAsync();
 
             builder.AddPolicy(defaultRetry);
@@ -34,7 +34,7 @@ namespace Kickr.Policy
 		{
 			var defaultRetry = Polly.Policy
 									.Handle<HttpRequestException>()
-									.OrResult<HttpResponseMessage>(m => m.IsSuccessStatusCode)
+									.OrResult<HttpResponseMessage>(m => !m.IsSuccessStatusCode)
 									.RetryAsync(timesToRetry);
 
 			builder.AddPolicy(defaultRetry);

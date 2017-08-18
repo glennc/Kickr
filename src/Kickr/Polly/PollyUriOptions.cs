@@ -8,7 +8,6 @@ namespace Kickr.Policy
 {
     public class PollyUriOptions
     {
-        public Uri Uri { get; set; }
         public Policy<HttpResponseMessage> Policy { get; set; }
     }
 }

@@ -10,10 +10,10 @@ namespace Kickr.Policy
 {
     public class PollyHttpMessageHandler : DelegatingHandler
     {
-        private IOptionsFactory<PollyUriOptions> _optionsFactory;
-        private UriKeyGenerator _keyGenerator;
+        private IOptionsMonitor<PollyUriOptions> _optionsFactory;
+        private IUriKeyGenerator _keyGenerator;
 
-        public PollyHttpMessageHandler(IOptionsFactory<PollyUriOptions> optionsFactory, HttpMessageHandler baseHandler, UriKeyGenerator keyGenerator)
+        public PollyHttpMessageHandler(IOptionsMonitor<PollyUriOptions> optionsFactory, HttpMessageHandler baseHandler, IUriKeyGenerator keyGenerator)
             : base(baseHandler)
         {
             _optionsFactory = optionsFactory;
@@ -22,16 +22,11 @@ namespace Kickr.Policy
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            var options = _optionsFactory.Create(_keyGenerator(request.RequestUri));
+            var options = _optionsFactory.Get(_keyGenerator.GenerateKey(request.RequestUri));
 
             if (options.Policy == null)
             {
-                var defaultOptions = _optionsFactory.Create("Default");
-                if (defaultOptions.Policy == null)
-                {
-                    return await base.SendAsync(request, cancellationToken);
-                }
-                options = defaultOptions;
+                return await base.SendAsync(request, cancellationToken);
             }
 
             return await options.Policy.ExecuteAsync(t => base.SendAsync(request, t), cancellationToken);

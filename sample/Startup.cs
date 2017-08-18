@@ -33,28 +33,31 @@ namespace sample
 
             services.AddConsul();
 
-			services.AddPolly(p =>
+            //Not sure about how first class this needs to be. Probably depends on how advanced we make the default generator.
+            services.AddSingleton<IUriKeyGenerator>(new FuncUriKeyGenerator(uri => uri.Host));
+
+            services.AddPolly(p =>
 			{
-				p.ConfigureDefaultPolicy(o =>
+				p.UsePolicy(o =>
 				{
 					o.AddCircuitBreaker(5, TimeSpan.FromSeconds(5));
 				})
 
-				.ConfigureUri("github", o =>
+				.UsePolicy("api.github.com", o =>
                 {
                     o.AddRetry();
-                    o.AddCircuitBreaker(2, TimeSpan.FromSeconds(5));
+                    o.AddCircuitBreaker(1, TimeSpan.FromSeconds(5));
                 });
 			});
 
             services.AddHeaders(b =>
             {
                 b.AddHeaders(o => o.Headers.Add("user-agent", "myagent"));
-                b.AddHeaders("github", o => o.Headers.Add("Accept", "application/vnd.github.v3+json"));
+                b.AddHeaders("api.github.com", o => o.Headers.Add("Accept", "application/vnd.github.v3+json"));
             });
 
             services.AddHttpClientFactory(pipelineBuilder => pipelineBuilder
-                        .UseKeyGenerator(uri => uri.Host)
+                        .UseHeaders()
                         .UseConsulServiceDiscovery()
                         .UsePolly());
         }

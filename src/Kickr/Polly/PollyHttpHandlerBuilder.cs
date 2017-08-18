@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Polly;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -14,33 +15,31 @@ namespace Kickr.Policy
             this.Services = services;
         }
 
-        public PollyHttpHandlerBuilder ConfigureUri(string name, Action<PollyPolicyBuilder> action)
+        public PollyHttpHandlerBuilder UsePolicy(string uriKey, Action<PollyPolicyBuilder> action)
         {
-            return ConfigureUri(new Uri(name), action);
-        }
-
-        public PollyHttpHandlerBuilder ConfigureUri(Uri name, Action<PollyPolicyBuilder> action)
-        {
-            Configure($"{name.Host}:{name.Port}", name, action);
+            var policy = Configure(action);
+            Services.Configure<PollyUriOptions>(uriKey, o =>
+            {
+                o.Policy = policy;
+            });
             return this;
         }
 
-        public PollyHttpHandlerBuilder ConfigureDefaultPolicy(Action<PollyPolicyBuilder> action)
+        public PollyHttpHandlerBuilder UsePolicy(Action<PollyPolicyBuilder> action)
         {
-            Configure("Default", null, action);
+            var policy = Configure(action);
+            Services.ConfigureAll<PollyUriOptions>(o =>
+            {
+                o.Policy = policy;
+            });
             return this;
         }
 
-        private void Configure(string name, Uri uri, Action<PollyPolicyBuilder> action)
+        private Policy<HttpResponseMessage> Configure(Action<PollyPolicyBuilder> action)
         {
             var policyBuilder = new PollyPolicyBuilder();
             action(policyBuilder);
-            var policy = policyBuilder.Build();
-            Services.Configure<PollyUriOptions>(name, o =>
-            {
-                o.Uri = uri;
-                o.Policy = policy;
-            });
+            return policyBuilder.Build();
         }
     }
 }

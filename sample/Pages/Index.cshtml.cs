@@ -11,18 +11,10 @@ namespace sample.Pages
     public class IndexModel : PageModel
     {
         private ILogger<IndexModel> _logger;
-        private IHttpClientFactory _factory;
 
-        public IndexModel(ILogger<IndexModel> logger, IHttpClientFactory factory)
+        public IndexModel(ILogger<IndexModel> logger)
         {
             _logger = logger;
-            _factory = factory;
-        }
-
-        public async Task OnGet()
-        {
-            var client = _factory.GetHttpClient();
-            var t = await client.GetStringAsync("http://www.google.com");
         }
     }
 }

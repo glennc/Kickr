@@ -24,4 +24,13 @@ namespace Kickr
             return this;
         }
     }
+
+    public static class HeaderBuilderExtension
+    {
+        public static HttpClientPipelineBuilder UseHeaders(this HttpClientPipelineBuilder pipeline)
+        {
+            pipeline.AddHandler<HeaderHandler>();
+            return pipeline;
+        }
+    }
 }

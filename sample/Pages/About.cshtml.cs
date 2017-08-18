@@ -28,26 +28,27 @@ namespace sample.Pages
 
         public async Task OnGet()
         {
-            Message = "Your application description page.";
 
             var client = _cilentFactory.GetHttpClient();
-            for (int i = 0; i < 10; i++)
-            {
-                try
-                {
-                    var s = await client.GetStringAsync("http://sample");
-                }
-                catch (BrokenCircuitException ex)
-                {
-                    //Circuit has been tripped. Send some default data or otherwise handle the fact that your thing is broken.
-                    _logger.LogError(ex, "Circuit broken");
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "error calling service");
-                }
-            }
-            var s1 = await client.GetStringAsync("http://www.google.com");
+
+            Message = await client.GetStringAsync("https://api.github.com");
+
+            //for (int i = 0; i < 10; i++)
+            //{
+            //    try
+            //    {
+            //        var s = await client.GetStringAsync("http://sample");
+            //    }
+            //    catch (BrokenCircuitException ex)
+            //    {
+            //        //Circuit has been tripped. Send some default data or otherwise handle the fact that your thing is broken.
+            //        _logger.LogError(ex, "Circuit broken");
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        _logger.LogError(ex, "error calling service");
+            //    }
+            //}
 
         }
 
