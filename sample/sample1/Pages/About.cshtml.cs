@@ -9,7 +9,6 @@ using Polly.CircuitBreaker;
 using Microsoft.Extensions.Logging;
 using System.Threading;
 using Kickr.Consul;
-using Consul;
 
 namespace sample.Pages
 {

@@ -10,10 +10,8 @@ using Kickr;
 using Kickr.Consul;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.HealthChecks;
-using Consul;
 using Polly;
 using System.Net.Http;
-using Kickr.Policy;
 
 namespace sample
 {

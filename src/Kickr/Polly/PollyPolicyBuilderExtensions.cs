@@ -3,8 +3,9 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
+using Kickr.Policy;
 
-namespace Kickr.Policy
+namespace Kickr
 {
     public static class PollyPolicyBuilderExtensions
     {

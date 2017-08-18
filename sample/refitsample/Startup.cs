@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using refitsample.Services;
+using Kickr;
 
 namespace refitsample
 {
@@ -26,7 +27,17 @@ namespace refitsample
 
 			services.AddRestClient<IConferencePlannerApi>("https://conferenceplanner-api.azurewebsites.net/");
 
-			services.AddHttpClientFactory();
+            services.AddPolly(p =>
+            {
+                p.UsePolicy(o => {
+                    o.AddCircuitBreaker(2, TimeSpan.FromSeconds(5));
+                    o.AddRetry();
+                });
+            });
+
+            services.AddHttpClientFactory(p => {
+                p.UsePolly();
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
