@@ -23,5 +23,14 @@ namespace Microsoft.Extensions.DependencyInjection
             return services;
         }
 
+		public static IServiceCollection AddHttpClientFactory(this IServiceCollection services)
+		{
+			services.TryAddScoped<IHttpClientFactory, HttpClientFactory>();
+
+			var pipeline = new HttpClientPipelineBuilder(services);
+			services.TryAddSingleton(pipeline);
+			return services;
+		}
+
     }
 }
