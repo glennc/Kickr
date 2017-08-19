@@ -1,15 +1,13 @@
-﻿using Consul;
+﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Consul;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.Extensions.HealthChecks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Kickr.Consul
 {
@@ -44,7 +42,7 @@ namespace Kickr.Consul
                     try
                     {
                         _serviceId = _env.ApplicationName + Guid.NewGuid();
-						_ttlId = $"{_env.ApplicationName}_ttl_check_{Guid.NewGuid()}";
+                        _ttlId = $"{_env.ApplicationName}_ttl_check_{Guid.NewGuid()}";
 
                         var result = await client.Agent.ServiceRegister(new AgentServiceRegistration
                         {
@@ -106,7 +104,7 @@ namespace Kickr.Consul
                 {
                     await client.Agent.ServiceDeregister(_serviceId);
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     _logger.LogError(ex, $"Error de-registering service for {_env.ApplicationName}");
                     throw ex;
@@ -116,9 +114,9 @@ namespace Kickr.Consul
 
         private async void RunTTLLoop2()
         {
-			DateTime lastRun = DateTime.UtcNow;
+            DateTime lastRun = DateTime.UtcNow;
 
-			while (_running)
+            while (_running)
             {
                 if ((DateTime.UtcNow - lastRun).TotalSeconds >= 15)
                 {
@@ -126,17 +124,17 @@ namespace Kickr.Consul
                     {
                         await client.Agent.PassTTL(_ttlId, "Alive");
                     }
-					lastRun = DateTime.UtcNow;
-				}
-				Thread.Sleep(1);
-			}
+                    lastRun = DateTime.UtcNow;
+                }
+                Thread.Sleep(1);
+            }
         }
 
         private async void RunTTLLoop()
         {
             DateTime lastRun = DateTime.UtcNow;
 
-            while(_running)
+            while (_running)
             {
                 if ((DateTime.UtcNow - lastRun).TotalSeconds >= 15)
                 {

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Net.Http;
+﻿using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -15,11 +14,11 @@ namespace Kickr.Consul
             _client = client;
         }
 
-		protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-		{
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
             request.RequestUri = await _client.GetUrl(request.RequestUri);
             return await base.SendAsync(request, cancellationToken);
-		}
+        }
 
     }
 }

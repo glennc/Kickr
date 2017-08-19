@@ -2,10 +2,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.Extensions.HealthChecks;
 
 namespace Kickr.Consul
 {
@@ -19,9 +15,9 @@ namespace Kickr.Consul
 
         public static IServiceCollection AddConsul(this IServiceCollection services)
         {
-			services.TryAddSingleton<IConsulClient, ConsulClient>();
-			services.TryAddSingleton<IServiceDiscoveryClient, ConsulServiceDiscoveryClient>();
-			services.TryAddSingleton<IHostedService, ConsulRegistrar>();
+            services.TryAddSingleton<IConsulClient, ConsulClient>();
+            services.TryAddSingleton<IServiceDiscoveryClient, ConsulServiceDiscoveryClient>();
+            services.TryAddSingleton<IHostedService, ConsulRegistrar>();
             return services;
         }
     }

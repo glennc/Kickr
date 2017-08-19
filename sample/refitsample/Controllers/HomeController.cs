@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
+﻿using System.Diagnostics;
 using System.Threading.Tasks;
 using Kickr.Refit;
 using Microsoft.AspNetCore.Mvc;
@@ -26,8 +23,8 @@ namespace refitsample.Controllers
 
         public async Task<IActionResult> About()
         {
-			var val = await _conferencePlanner.GetSessionsAsync();
-            ViewData["Message"] = val.ToString();
+            var val = await _conferencePlanner.GetSessionsAsync();
+            ViewData["Message"] = val;
 
             return View();
         }

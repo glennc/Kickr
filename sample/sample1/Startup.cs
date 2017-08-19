@@ -1,17 +1,10 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Kickr;
+using Kickr.Consul;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Kickr;
-using Kickr.Consul;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.HealthChecks;
-using Polly;
-using System.Net.Http;
 
 namespace sample
 {
@@ -31,22 +24,19 @@ namespace sample
 
             services.AddConsul();
 
-            //Not sure about how first class this needs to be. Probably depends on how advanced we make the default generator.
-            services.AddSingleton<IUriKeyGenerator>(new FuncUriKeyGenerator(uri => uri.Host));
-
             services.AddPolly(p =>
-			{
-				p.UsePolicy(o =>
-				{
-					o.AddCircuitBreaker(5, TimeSpan.FromSeconds(5));
-				})
+            {
+                p.UsePolicy(o =>
+                {
+                    o.AddCircuitBreaker(5, TimeSpan.FromSeconds(5));
+                })
 
-				.UsePolicy("api.github.com", o =>
+                .UsePolicy("api.github.com", o =>
                 {
                     o.AddRetry();
                     o.AddCircuitBreaker(1, TimeSpan.FromSeconds(5));
                 });
-			});
+            });
 
             services.AddHeaders(b =>
             {

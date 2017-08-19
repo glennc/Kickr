@@ -1,18 +1,17 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Polly;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Net.Http;
+using Microsoft.Extensions.DependencyInjection;
+using Polly;
 
 namespace Kickr.Policy
 {
     public class PollyHttpHandlerBuilder
     {
-        public IServiceCollection Services { get; private set; }
+        public IServiceCollection Services { get; }
 
         public PollyHttpHandlerBuilder(IServiceCollection services)
         {
-            this.Services = services;
+            Services = services;
         }
 
         public PollyHttpHandlerBuilder UsePolicy(string uriKey, Action<PollyPolicyBuilder> action)

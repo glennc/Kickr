@@ -1,12 +1,10 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Linq;
 using System.Net.Http;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Kickr.Tests
@@ -35,7 +33,8 @@ namespace Kickr.Tests
         {
             var services = new ServiceCollection()
                                .AddOptions()
-                               .AddHttpClientFactory(p => {
+                               .AddHttpClientFactory(p =>
+                               {
                                    p.UseHeaders();
                                })
                                .AddHeaders(p => p.AddHeaders(o => o.Headers.Add("Key1", ""))
@@ -45,7 +44,8 @@ namespace Kickr.Tests
 
             //Because send is protected it seemed easier to just run the whole test through httpClient
             //replacing the last handler instead of isolating it to just executing send on a single handler.
-            var fakeHandler = new FakeHandler(req => {
+            var fakeHandler = new FakeHandler(req =>
+            {
                 Assert.True(req.Headers.Contains("key1"));
                 Assert.Equal(3, req.Headers.GetValues("Key2").Count());
             });
@@ -65,7 +65,7 @@ namespace Kickr.Tests
             public FakeHttpPipelineBuilder(IServiceCollection services, HttpMessageHandler baseHandler) : base(services)
             {
                 BaseHandler = baseHandler;
-            } 
+            }
         }
 
 

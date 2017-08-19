@@ -1,6 +1,5 @@
 ﻿using System;
 using Kickr.Refit;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Microsoft.Extensions.DependencyInjection

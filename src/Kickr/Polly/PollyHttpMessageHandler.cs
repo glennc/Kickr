@@ -1,10 +1,7 @@
-﻿using Microsoft.Extensions.Options;
-using System;
-using System.Collections.Generic;
-using System.Net.Http;
-using System.Text;
+﻿using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Options;
 
 namespace Kickr.Policy
 {
@@ -13,8 +10,7 @@ namespace Kickr.Policy
         private IOptionsMonitor<PollyUriOptions> _optionsFactory;
         private IUriKeyGenerator _keyGenerator;
 
-        public PollyHttpMessageHandler(IOptionsMonitor<PollyUriOptions> optionsFactory, HttpMessageHandler baseHandler, IUriKeyGenerator keyGenerator)
-            : base(baseHandler)
+        public PollyHttpMessageHandler(IOptionsMonitor<PollyUriOptions> optionsFactory, IUriKeyGenerator keyGenerator)
         {
             _optionsFactory = optionsFactory;
             _keyGenerator = keyGenerator;

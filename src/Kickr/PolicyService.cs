@@ -1,9 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Polly;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Net.Http;
+using Polly;
 
 namespace Kickr
 {
@@ -11,8 +10,10 @@ namespace Kickr
     {
         private const int NUMBER_OF_ALLOWED_ERRORS = 3;
 
-        private ConcurrentDictionary<string, Policy<HttpResponseMessage>> _policies;
+        private ConcurrentDictionary<string, Policy<HttpResponseMessage>> _policies = new ConcurrentDictionary<string, Policy<HttpResponseMessage>>();
+
         private Func<Uri, Policy<HttpResponseMessage>> _defaultPolicyBuilder;
+
         private static Policy<HttpResponseMessage> DefaultPolicy => Polly.Policy
                 .Handle<HttpRequestException>()
                 .OrResult<HttpResponseMessage>((resp) =>
@@ -29,7 +30,6 @@ namespace Kickr
 
         public PolicyService(Func<Uri, Policy<HttpResponseMessage>> defaultPolicyBuilder)
         {
-            _policies = new ConcurrentDictionary<string, Policy<HttpResponseMessage>>();
             _defaultPolicyBuilder = defaultPolicyBuilder;
         }
 
@@ -40,8 +40,7 @@ namespace Kickr
 
         public Policy<HttpResponseMessage> GetPolicy(Uri policyName)
         {
-            Policy<HttpResponseMessage> policy;
-            if(!_policies.TryGetValue(policyName.ToString(), out policy))
+            if (!_policies.TryGetValue(policyName.ToString(), out var policy))
             {
                 policy = _defaultPolicyBuilder(policyName);
                 //TODO: Put some more thought into this. After a certain point for most applications this should be almost all reads.

@@ -1,9 +1,5 @@
-﻿using Consul;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System;
 using System.Net.Http;
-using Microsoft.Extensions.Options;
 
 namespace Kickr
 {

@@ -1,13 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Kickr;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using refitsample.Services;
-using Kickr;
 
 namespace refitsample
 {
@@ -25,17 +22,19 @@ namespace refitsample
         {
             services.AddMvc();
 
-			services.AddRestClient<IConferencePlannerApi>("https://conferenceplanner-api.azurewebsites.net/");
+            services.AddRestClient<IConferencePlannerApi>("https://conferenceplanner-api.azurewebsites.net/");
 
             services.AddPolly(p =>
             {
-                p.UsePolicy(o => {
+                p.UsePolicy(o =>
+                {
                     o.AddCircuitBreaker(2, TimeSpan.FromSeconds(5));
                     o.AddRetry();
                 });
             });
 
-            services.AddHttpClientFactory(p => {
+            services.AddHttpClientFactory(p =>
+            {
                 p.UsePolly();
             });
         }

@@ -1,10 +1,7 @@
 ﻿
 using System;
-using System.Collections.Generic;
-using System.Text;
 using Kickr.Policy;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.HealthChecks;
 
 namespace Kickr
 {
@@ -12,8 +9,8 @@ namespace Kickr
     {
         public static HttpClientPipelineBuilder UsePolly(this HttpClientPipelineBuilder builder)
         {
-			//TODO: Add HealthCheck to DI. Make sure that adding it to DI is enough to make it work.
-			builder.AddHandler<PollyHttpMessageHandler>();
+            //TODO: Add HealthCheck to DI. Make sure that adding it to DI is enough to make it work.
+            builder.AddHandler<PollyHttpMessageHandler>();
             return builder;
         }
     }
@@ -22,8 +19,8 @@ namespace Kickr
     {
         public static IServiceCollection AddPolly(this IServiceCollection services, Action<PollyHttpHandlerBuilder> pollyBuilder)
         {
-			var p = new PollyHttpHandlerBuilder(services);
-			pollyBuilder(p);
+            var p = new PollyHttpHandlerBuilder(services);
+            pollyBuilder(p);
             return services;
         }
     }

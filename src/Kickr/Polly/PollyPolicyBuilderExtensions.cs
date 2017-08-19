@@ -1,9 +1,7 @@
-﻿using Polly;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Net.Http;
-using System.Text;
 using Kickr.Policy;
+using Polly;
 
 namespace Kickr
 {
@@ -17,7 +15,7 @@ namespace Kickr
                                     .CircuitBreakerAsync(handledEventsAllowedBeforeBreaking, durationOfBreak);
             builder.AddPolicy(defaultBreaker);
             return builder;
-        } 
+        }
 
         public static PollyPolicyBuilder AddRetry(this PollyPolicyBuilder builder)
         {
@@ -29,19 +27,19 @@ namespace Kickr
             builder.AddPolicy(defaultRetry);
 
             return builder;
-		}
+        }
 
-		public static PollyPolicyBuilder AddRetry(this PollyPolicyBuilder builder, int timesToRetry)
-		{
-			var defaultRetry = Polly.Policy
-									.Handle<HttpRequestException>()
-									.OrResult<HttpResponseMessage>(m => !m.IsSuccessStatusCode)
-									.RetryAsync(timesToRetry);
+        public static PollyPolicyBuilder AddRetry(this PollyPolicyBuilder builder, int timesToRetry)
+        {
+            var defaultRetry = Polly.Policy
+                                    .Handle<HttpRequestException>()
+                                    .OrResult<HttpResponseMessage>(m => !m.IsSuccessStatusCode)
+                                    .RetryAsync(timesToRetry);
 
-			builder.AddPolicy(defaultRetry);
+            builder.AddPolicy(defaultRetry);
 
-			return builder;
-		}
+            return builder;
+        }
 
     }
 }

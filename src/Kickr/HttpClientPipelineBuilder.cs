@@ -1,14 +1,13 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Net.Http;
-using System.Text;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Kickr
 {
-	public class HttpClientPipelineBuilder
+    public class HttpClientPipelineBuilder
     {
-		public IServiceCollection Services { get; private set; }
+        public IServiceCollection Services { get; private set; }
         private List<Type> _handlerPipeline;
 
         public HttpMessageHandler BaseHandler { get; protected set; }
@@ -29,9 +28,11 @@ namespace Kickr
         {
             _handlerPipeline.Reverse();
             var handler = BaseHandler;
-            foreach(var handlerType in _handlerPipeline)
+            foreach (var handlerType in _handlerPipeline)
             {
-                handler = (DelegatingHandler)ActivatorUtilities.CreateInstance(provider, handlerType, handler);
+                var current = (DelegatingHandler)ActivatorUtilities.CreateInstance(provider, handlerType);
+                current.InnerHandler = handler;
+                handler = current;
             }
 
             return handler;

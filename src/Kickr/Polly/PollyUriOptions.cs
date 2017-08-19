@@ -1,8 +1,5 @@
-﻿
-
+﻿using System.Net.Http;
 using Polly;
-using System;
-using System.Net.Http;
 
 namespace Kickr.Policy
 {

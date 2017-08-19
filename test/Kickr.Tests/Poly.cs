@@ -9,6 +9,6 @@ namespace Kickr.Tests
 {
     public class Polly
     {
-        
+
     }
 }
