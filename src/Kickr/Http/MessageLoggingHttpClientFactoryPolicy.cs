@@ -45,9 +45,20 @@ namespace Kickr.Http
             protected async override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
             {
                 _logger.LogInformation("Sending {HttpMethod} request to {RequestUri}", request.Method, request.RequestUri);
-                var response = await base.SendAsync(request, cancellationToken);
-                _logger.LogInformation("Response was a {Status}", response.StatusCode);
-                return response;
+
+                HttpResponseMessage response = null;
+                try
+                {
+                    response = await base.SendAsync(request, cancellationToken);
+                    return response;
+                }
+                finally
+                {
+                    if (response != null)
+                    {
+                        _logger.LogInformation("Response was a {Status}", response.StatusCode);
+                    }
+                }
             }
         }
     }

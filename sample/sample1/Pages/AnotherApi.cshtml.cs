@@ -1,30 +1,29 @@
-﻿using System;
-using System.Net.Http;
-using System.Threading;
+﻿using System.Net.Http;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using Kickr;
 using Kickr.Mvc;
+using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
 
 namespace sample.Pages
 {
-    public class AboutModel : PageModel
+    public class AnotherApiModel : PageModel
     {
-        private ILogger<AboutModel> _logger;
-        private HttpClientFactory _cilentFactory;
+        private ILogger<AnotherApiModel> _logger;
+        private HtmlEncoder _encoder;
 
-        public string Message { get; set; }
+        public IHtmlContent Payload { get; set; }
 
-        public AboutModel(ILogger<AboutModel> logger, HttpClientFactory clientFactory)
+        public AnotherApiModel(ILogger<AnotherApiModel> logger, HtmlEncoder encoder)
         {
             _logger = logger;
-            _cilentFactory = clientFactory;
+            _encoder = encoder;
         }
 
         public async Task OnGet([HttpClientName("github")] HttpClient client)
         {
-            Message = await client.GetStringAsync("/");
+            Payload = new HtmlString(_encoder.Encode(await client.GetStringAsync("/")));
 
             //for (int i = 0; i < 10; i++)
             //{
@@ -42,21 +41,6 @@ namespace sample.Pages
             //        _logger.LogError(ex, "error calling service");
             //    }
             //}
-
-        }
-
-    }
-
-    public class DummyServiceDiscovery : IServiceDiscoveryClient
-    {
-        public Task<Uri> GetUriAsync(Uri service)
-        {
-            return GetUriAsync(service, default(CancellationToken));
-        }
-
-        public Task<Uri> GetUriAsync(Uri service, CancellationToken token)
-        {
-            return Task.FromResult(service);
         }
     }
 }

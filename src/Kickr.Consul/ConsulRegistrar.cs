@@ -16,17 +16,15 @@ namespace Kickr.Consul
         private IHostingEnvironment _env;
         private IServer _server;
         private ILogger<ConsulRegistrar> _logger;
-        private IHealthCheckService _healthChecks;
         private bool _running = true;
         private string _ttlId;
         private Thread _workerThread;
         string _serviceId;
 
-        public ConsulRegistrar(IHostingEnvironment env, IServer server, IHealthCheckService healthChecks, ILogger<ConsulRegistrar> logger)
+        public ConsulRegistrar(IHostingEnvironment env, IServer server, ILogger<ConsulRegistrar> logger)
         {
             _env = env;
             _server = server;
-            _healthChecks = healthChecks;
             _logger = logger;
         }
 
@@ -35,10 +33,11 @@ namespace Kickr.Consul
             using (var client = new ConsulClient())
             {
                 var addressFeature = _server.Features.Get<IServerAddressesFeature>();
-                //TODO: on second thought this loop is a bad idea.
+
                 foreach (var address in addressFeature.Addresses)
                 {
-                    var uri = new Uri(address);
+                    var baseAddress = new Uri(address);
+                    var healthAddress = new Uri(baseAddress, "/health");
 
                     try
                     {
@@ -50,13 +49,14 @@ namespace Kickr.Consul
                             Name = _env.ApplicationName,
                             Address = address,
                             ID = _serviceId,
-                            Port = uri.Port,
-                            Checks = new AgentServiceCheck[] {
+                            Port = baseAddress.Port,
+                            Checks = new AgentServiceCheck[]
+                            {
                                 new AgentCheckRegistration
                                 {
                                     Name = $"{_env.ApplicationName}_ping_check",
                                     ID = $"{_env.ApplicationName}_ping_check_{Guid.NewGuid()}",
-                                    HTTP = address,
+                                    HTTP = healthAddress.AbsoluteUri,
                                     Interval = TimeSpan.FromSeconds(20),
                                     Timeout = TimeSpan.FromSeconds(5)
                                 }
@@ -90,7 +90,7 @@ namespace Kickr.Consul
                 }
             }
 
-            _workerThread = new Thread(new ThreadStart(RunTTLLoop2));
+            _workerThread = new Thread(new ThreadStart(RunTTLLoop));
             _workerThread.Start();
         }
 
@@ -113,24 +113,6 @@ namespace Kickr.Consul
             }
         }
 
-        private async void RunTTLLoop2()
-        {
-            DateTime lastRun = DateTime.UtcNow;
-
-            while (_running)
-            {
-                if ((DateTime.UtcNow - lastRun).TotalSeconds >= 15)
-                {
-                    using (var client = new ConsulClient())
-                    {
-                        await client.Agent.PassTTL(_ttlId, "Alive");
-                    }
-                    lastRun = DateTime.UtcNow;
-                }
-                Thread.Sleep(1);
-            }
-        }
-
         private async void RunTTLLoop()
         {
             DateTime lastRun = DateTime.UtcNow;
@@ -139,26 +121,16 @@ namespace Kickr.Consul
             {
                 if ((DateTime.UtcNow - lastRun).TotalSeconds >= 15)
                 {
-                    var healthStatus = await _healthChecks.CheckHealthAsync();
+                    // In the future this will integrate with health checks to get a real status.
                     using (var client = new ConsulClient())
                     {
-                        switch (healthStatus.CheckStatus)
-                        {
-                            case CheckStatus.Healthy:
-                                await client.Agent.PassTTL(_ttlId, healthStatus.Description);
-                                break;
-                            case CheckStatus.Unhealthy:
-                                await client.Agent.FailTTL(_ttlId, healthStatus.Description);
-                                break;
-                            case CheckStatus.Warning:
-                            case CheckStatus.Unknown:
-                                await client.Agent.WarnTTL(_ttlId, healthStatus.Description);
-                                break;
-                        }
+                        await client.Agent.PassTTL(_ttlId, "I'm running");
                     }
+
                     lastRun = DateTime.UtcNow;
                 }
-                Thread.Sleep(1);
+
+                await Task.Yield();
             }
         }
     }

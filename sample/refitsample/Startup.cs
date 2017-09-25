@@ -28,8 +28,10 @@ namespace refitsample
 
             services.AddRestClient<IConferencePlannerApi>("https://conferenceplanner-api.azurewebsites.net/");
 
-            services.AddKickrGlobalPolicy(b => b.CircuitBreakerAsync(2, TimeSpan.FromSeconds(5)));
+            services.AddKickrGlobalPolicy(b => b.CircuitBreakerAsync(5, TimeSpan.FromSeconds(5)));
             services.AddKickrGlobalPolicy(b => b.RetryAsync());
+
+            services.AddKickrPolicy<IConferencePlannerApi>(b => b.CircuitBreakerAsync(2, TimeSpan.FromSeconds(5)));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -59,5 +59,26 @@ namespace Microsoft.Extensions.DependencyInjection
             services.Configure<HeaderOptions>(name, action);
             return services;
         }
+
+        public static IServiceCollection AddKickrNamedClient(this IServiceCollection services, string name, Action<NamedClientOptions> action)
+        {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
+            if (action == null)
+            {
+                throw new ArgumentNullException(nameof(action));
+            }
+
+            services.Configure<NamedClientOptions>(name, action);
+            return services;
+        }
     }
 }
