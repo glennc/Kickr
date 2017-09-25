@@ -58,5 +58,22 @@ namespace Microsoft.Extensions.DependencyInjection
             services.Configure<PollyOptions>(name, options => options.Policies.Add(action(builder)));
             return services;
         }
+
+        public static IServiceCollection AddKickrPolicy<TClient>(this IServiceCollection services, Func<global::Polly.PolicyBuilder<HttpResponseMessage>, global::Polly.Policy<HttpResponseMessage>> action)
+        {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
+            if (action == null)
+            {
+                throw new ArgumentNullException(nameof(action));
+            }
+
+            var builder = global::Polly.Policy<HttpResponseMessage>.Handle<HttpRequestException>().OrResult(m => !m.IsSuccessStatusCode);
+            services.Configure<PollyOptions>(typeof(TClient).Name, options => options.Policies.Add(action(builder)));
+            return services;
+        }
     }
 }
