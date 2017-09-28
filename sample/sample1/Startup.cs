@@ -1,10 +1,10 @@
 using System;
-using Kickr;
 using Kickr.Consul;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Polly;
 
 namespace sample
 {
@@ -16,41 +16,24 @@ namespace sample
         }
 
         public IConfiguration Configuration { get; }
-
-        // This method gets called by the runtime. Use this method to add services to the container.
+        
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc();
+            services.AddMvc().AddKickrModelBinder();
 
+            services.AddKickr();
             services.AddConsul();
+            services.AddPolly();
 
-            services.AddPolly(p =>
-            {
-                p.UsePolicy(o =>
-                {
-                    o.AddCircuitBreaker(5, TimeSpan.FromSeconds(5));
-                })
+            services.AddKickrGlobalPolicy(b => b.CircuitBreakerAsync(5, TimeSpan.FromSeconds(5)));
+            services.AddKickrGlobalHeaders(o => o.Headers.Add("user-agent", "Kickr-Sample"));
 
-                .UsePolicy("api.github.com", o =>
-                {
-                    o.AddRetry();
-                    o.AddCircuitBreaker(1, TimeSpan.FromSeconds(5));
-                });
-            });
-
-            services.AddHeaders(b =>
-            {
-                b.AddHeaders(o => o.Headers.Add("user-agent", "myagent"));
-                b.AddHeaders("api.github.com", o => o.Headers.Add("Accept", "application/vnd.github.v3+json"));
-            });
-
-            services.AddHttpClientFactory(pipelineBuilder => pipelineBuilder
-                        .UseHeaders()
-                        .UseConsulServiceDiscovery()
-                        .UsePolly());
+            services.AddKickrNamedClient("github", b => b.BaseAddress = new Uri("https://api.github.com"));
+            services.AddKickrPolicy("github", b => b.RetryAsync());
+            services.AddKickrPolicy("github", b => b.CircuitBreakerAsync(2, TimeSpan.FromSeconds(5)));
+            services.AddKickrHeaders("github", o => o.Headers.Add("Accept", "application/vnd.github.v3+json"));
         }
-
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
             if (env.IsDevelopment())
@@ -64,12 +47,7 @@ namespace sample
 
             app.UseStaticFiles();
 
-            app.UseMvc(routes =>
-            {
-                routes.MapRoute(
-                    name: "default",
-                    template: "{controller}/{action=Index}/{id?}");
-            });
+            app.UseMvc();
         }
     }
 }

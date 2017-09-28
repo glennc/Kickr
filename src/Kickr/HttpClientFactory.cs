@@ -1,20 +1,17 @@
-﻿using System;
+﻿
 using System.Net.Http;
 
 namespace Kickr
 {
-    public class HttpClientFactory : IHttpClientFactory
+    public abstract class HttpClientFactory
     {
-        private HttpClient _client;
+        public static readonly string DefaultClientName = "Default";
 
-        public HttpClientFactory(IServiceProvider provider, HttpClientPipelineBuilder builder)
+        public virtual HttpClient GetDefaultClient()
         {
-            _client = new HttpClient(builder.Build(provider));
+            return GetNamedClient(DefaultClientName);
         }
 
-        public HttpClient GetHttpClient()
-        {
-            return _client;
-        }
+        public abstract HttpClient GetNamedClient(string name);
     }
 }

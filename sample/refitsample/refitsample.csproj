@@ -6,6 +6,8 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.0" />
+    
+    <!-- This needs to be here as an explicit reference, don't try to optimize it you smarty-pants. -->
     <PackageReference Include="Refit" Version="4.0.0" />
   </ItemGroup>
 
@@ -14,9 +16,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Kickr\Kickr.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Services\" />
+    <ProjectReference Include="..\..\src\Kickr.All\Kickr.All.csproj" />
   </ItemGroup>
 </Project>
